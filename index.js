@@ -10,32 +10,34 @@ async function csvFormatter() {
 
 
 
-  header = formattedHeader();
-  for (let i of files) {
-    let splitFile = i.split(",")
-    informationList.push({
-      fullname: splitFile[0],
-      id: splitFile[1],
-      groups: [
-        splitFile[8].split("/ ,"[0])
-      ],
-      addresses: [
-        {
-          type: header[2].split(" ")[0],
-          tags: [
-            header[2].split(" ")[1]
-          ],
-          address: splitFile[2]
-        },
-        {
-          type: header[4].split(" ")[0],
-          tags: [
-            header[4].split(" "[0])[1], header[4].split(" "[0])[2]
-          ],
-          address: splitFile[4]
-        }
-      ]
-    })
+  { // Main algorithm
+    header = formattedHeader();
+    for (let i of files) {
+      let splitFile = i.split(",")
+      informationList.push({
+        fullname: splitFile[0],
+        id: splitFile[1],
+        groups: [
+          splitFile[8].split("/ ,"[0])
+        ],
+        addresses: [
+          {
+            type: header[2].split(" ")[0],
+            tags: [
+              header[2].split(" ")[1]
+            ],
+            address: splitFile[2]
+          },
+          {
+            type: header[4].split(" ")[0],
+            tags: [
+              header[4].split(" "[0])[1], header[4].split(" "[0])[2]
+            ],
+            address: splitFile[4]
+          }
+        ]
+      })
+    }
   }
   await writeFile("./output.json", JSON.stringify(informationList));
   console.table(informationList);
