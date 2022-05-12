@@ -1,0 +1,12 @@
+{
+  "name": "challenge",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:levyaraujo/csv-challenge.git",
+  "author": "Levy Araujo <levyxaraujo@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "google-libphonenumber": "^3.2.27"
+  }
+}
