@@ -2,11 +2,17 @@ import { createReadStream, createWriteStream } from "fs";
 import pkg from "csv-parser";
 let headers = [];
 let infos = [];
+let outputJson = [];
 
 function inputFiles() {
   // função principal que irá receber a stream de dados do arquivo
   createReadStream("./input.csv", { encoding: "utf-8" }) // lendo os "chunks" de dados
-    .pipe(pkg({ separator: ",", quote: '"' }))
+    .pipe(
+      pkg({
+        separator: ",",
+        quote: '"',
+      })
+    )
     .on("data", (chunk) => {
       // os chunks serão formatados depois de passarem pelo pipe
       {
@@ -21,13 +27,12 @@ function inputFiles() {
       }
     })
     .on("end", () => {
-      let outputJson = [];
       for (let i of infos) {
         let splitFile = i.split(",");
         outputJson.push({
           fullname: splitFile[0],
           eid: splitFile[1],
-          groups: splitFile[8].split("/,\r"[0]),
+          groups: splitFile[8].split("/, \r"[0]),
           addresses: [
             {
               type: headers[2].split(" ")[0],
@@ -37,12 +42,14 @@ function inputFiles() {
           ],
         });
       }
-
-      const writer = createWriteStream("./test.json", {
+    })
+    .on("close", () => {
+      const writer = createWriteStream("./output.json", {
         encoding: "utf-8",
         flags: "w",
       });
       writer.write(JSON.stringify(outputJson));
+      console.log("CSV SUCCESSFULLY EXPORTED");
     });
 }
 
