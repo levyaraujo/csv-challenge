@@ -1,20 +1,18 @@
 import { createReadStream, createWriteStream } from "fs";
 import pkg from "csv-parser";
-let headers = [];
-let infos = [];
-let outputJson = [];
+import phone from "google-libphonenumber";
+const { PhoneNumberUtil, PhoneNumberFormat } = phone;
+const phoneUtil = PhoneNumberUtil.getInstance();
+const PNF = PhoneNumberFormat;
 
 function inputFiles() {
-  // função principal que irá receber a stream de dados do arquivo
+  let headers = [];
+  let infos = [];
+  let outputJson = [];
+
   createReadStream("./input.csv", { encoding: "utf-8" }) // lendo os "chunks" de dados
-    .pipe(
-      pkg({
-        separator: ",",
-        quote: '"',
-      })
-    )
+    .pipe(pkg()) // os chunks serão formatados ao passarem pelo pipe
     .on("data", (chunk) => {
-      // os chunks serão formatados depois de passarem pelo pipe
       {
         let header = [...Object.keys(chunk)].toString();
         let files = [...Object.values(chunk)].toString();
@@ -28,28 +26,53 @@ function inputFiles() {
     })
     .on("end", () => {
       for (let i of infos) {
-        let splitFile = i.split(",");
-        outputJson.push({
-          fullname: splitFile[0],
-          eid: splitFile[1],
-          groups: splitFile[8].split("/, \r"[0]),
-          addresses: [
-            {
-              type: headers[2].split(" ")[0],
-              tags: headers[2].split(" ").slice(1),
-              address: splitFile[2],
-            },
-          ],
-        });
+        const splitFile = i.split(",");
+        const emailHeader = headers[2].split(" ")[0];
+        const pedagogicalPhone = splitFile[5];
+        const phoneHeader = headers[3].split(" ")[0];
+        const studentTags = headers[3].split(" ").slice(1);
+        const pedagogicalTags = headers[5].split(" ").slice(1);
+        const studentPhone = splitFile[3];
+
+        try {
+          const number = phoneUtil.parseAndKeepRawInput(studentPhone, "BR");
+          outputJson.push({
+            fullname: splitFile[0],
+            eid: splitFile[1],
+            groups: splitFile[8].split("/, \r"[0]),
+            addresses: [
+              {
+                type: emailHeader,
+                tags: studentTags,
+                address: splitFile[2],
+              },
+              {
+                type: phoneHeader,
+                tags: studentTags,
+                address: phoneUtil.format(number, PNF.NATIONAL),
+              },
+              {
+                type: emailHeader,
+                tags: pedagogicalTags,
+                address: splitFile[4],
+              },
+              {
+                type: phoneHeader,
+                tags: pedagogicalTags,
+                address: pedagogicalPhone,
+              },
+            ],
+          });
+        } catch {}
       }
     })
     .on("close", () => {
       const writer = createWriteStream("./output.json", {
         encoding: "utf-8",
-        flags: "w",
       });
       writer.write(JSON.stringify(outputJson));
       console.log("CSV SUCCESSFULLY EXPORTED");
+      console.log(infos);
     });
 }
 
