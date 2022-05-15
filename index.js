@@ -95,10 +95,11 @@ function dataProcess() {
 
     .on("close", () => {
       output.splice(0, 1);
-      const writer = createWriteStream("./joutput.json", {
+      const writer = createWriteStream("./output.json", {
         encoding: "utf-8",
       });
       writer.write(JSON.stringify(output));
+      console.log("CSV successfully processed!");
     });
 }
 
