@@ -6,24 +6,22 @@ const phoneUtil = PhoneNumberUtil.getInstance();
 const PNF = PhoneNumberFormat;
 
 function inputFiles() {
-  let headers = [];
-  let infos = [];
-  let outputJson = [];
+  const headers = [];
+  const infos = [];
+  const outputJson = [];
 
   createReadStream("./input.csv", { encoding: "utf-8" }) // lendo os "chunks" de dados
     .pipe(pkg()) // os chunks serão formatados ao passarem pelo pipe
-    .on("data", (chunk) => {
-      {
-        let header = [...Object.keys(chunk)].toString();
-        let files = [...Object.values(chunk)].toString();
-        header = header.split(",");
-        files = files.split("\r\n");
 
-        headers.push(...header);
-        infos.push(...files);
-        headers.splice(11, Number.MAX_VALUE);
-      }
+    .on("data", (chunk) => {
+      const header = [...Object.keys(chunk)].toString().split(",");
+      const files = [...Object.values(chunk)].toString().split("\r\n");
+
+      headers.push(...header);
+      infos.push(...files);
+      headers.splice(11, Number.MAX_VALUE);
     })
+
     .on("end", () => {
       for (let i of infos) {
         const splitFile = i.split(",");
@@ -33,6 +31,7 @@ function inputFiles() {
         const studentTags = headers[3].split(" ").slice(1);
         const pedagogicalTags = headers[5].split(" ").slice(1);
         const studentPhone = splitFile[3];
+        const financialTags = headers[6].split(" ").slice(1);
 
         try {
           const number = phoneUtil.parseAndKeepRawInput(studentPhone, "BR");
@@ -61,18 +60,28 @@ function inputFiles() {
                 tags: pedagogicalTags,
                 address: pedagogicalPhone,
               },
+              {
+                type: emailHeader,
+                tags: financialTags,
+                address: splitFile[6],
+              },
+              {
+                type: phoneHeader,
+                tags: financialTags,
+                address: splitFile[7],
+              },
             ],
           });
         } catch {}
       }
     })
+
     .on("close", () => {
       const writer = createWriteStream("./output.json", {
         encoding: "utf-8",
       });
       writer.write(JSON.stringify(outputJson));
       console.log("CSV SUCCESSFULLY EXPORTED");
-      console.log(infos);
     });
 }
 
