@@ -95,7 +95,7 @@ function dataProcess() {
 
     .on("close", () => {
       output.splice(0, 1);
-      const writer = createWriteStream("./agoravai.json", {
+      const writer = createWriteStream("./joutput.json", {
         encoding: "utf-8",
       });
       writer.write(JSON.stringify(output));
