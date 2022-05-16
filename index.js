@@ -18,8 +18,12 @@ function dataProcess() {
   const invisible = [];
   const see_all = [];
 
-  createReadStream("./input.csv")
+  createReadStream("./input.csv") // Cria uma stream de leitura do arquivo
     .pipe(parse({ delimiter: "," }))
+
+    .on("error", () => {
+      console.log("Ocorreu um erro inesperado");
+    })
 
     .on("data", (row) => {
       name.push(row[0]);
@@ -50,7 +54,7 @@ function dataProcess() {
           output.push({
             fullname: name[i],
             eid: id[i],
-            groups: groups[i],
+            groups: groups[i].split(","),
             addresses: [
               {
                 type: emailHeader,
@@ -75,7 +79,7 @@ function dataProcess() {
               {
                 type: phoneHeader,
                 tags: financialEmail[0].split(" ").slice(1),
-                address: financialPhone[i - 1],
+                address: financialPhone[i],
               },
               {
                 type: phoneHeader,
